@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orumba-Media | Futuristic Blog</title>
+    
+    <!-- Font Awesome -->
+    <script src="https://kit.fontawesome.com/576f0d94a2.js" crossorigin="anonymous"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modern_style.css') }}">
+    
+    <!-- Particle.js -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    
+    <!-- GSAP Animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+</head>
+<body>
+    <!-- Particle Background -->
+    <div id="particles-js"></div>
+    
+    <!-- Glass Morphism Header -->
+    <header class="glass-header">
+        <div class="logo">
+            <h1 class="logo-text"><span class="gradient-text">Orumba</span>-Media</h1>
+        </div>
+        
+        <!-- Theme Toggle -->
+        <div class="theme-toggle">
+            <i class="fas fa-moon"></i>
+            <label class="switch">
+                <input type="checkbox" id="theme-switcher">
+                <span class="slider round"></span>
+            </label>
+            <i class="fas fa-sun"></i>
+        </div>
+        
+        <!-- Holographic Nav -->
+        <nav class="holographic-nav">
+            <ul>
+                <li><a href="#" class="nav-link hover-underline">Home</a></li>
+                <li><a href="{{ url_for('history') }}" class="nav-link hover-underline">History</a></li>
+                <li><a href="{{ url_for('magazine') }}" class="nav-link hover-underline">Magazine</a></li>
+                <li class="nav-dropdown">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-user-astronaut"></i> 
+                        <span class="username">{{ current_user.username if current_user.is_authenticated else 'Guest' }}</span>
+                        <i class="fas fa-chevron-down dropdown-arrow"></i>
+                    </a>
+                    <ul class="dropdown-menu glass-dropdown">
+                        {% if current_user.id == 1 %}
+                        <li><a href="{{ url_for('dashboard') }}" class="dropdown-link"><i class="fas fa-star"></i> Dashboard</a></li>
+                        {% endif %}
+                        {% if current_user.is_authenticated %}
+                            <li><a href="{{ url_for('logout') }}" class="dropdown-link"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                        {% else %}
+                            <li><a href="{{ url_for('login') }}" class="dropdown-link"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+                        {% endif %}
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="content-wrapper">
+        <!-- Animated Hero Section -->
+        <section class="hero-section">
+            <div class="hero-content">
+                <h2 class="hero-title">Explore the Future of Content</h2>
+                <p class="hero-subtitle">Where technology meets creativity</p>
+                <div class="scrolling-arrow">
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+        </section>
+
+        <!-- Trending Posts - 3D Carousel -->
+        <section class="trending-section">
+            <h2 class="section-title neon-text">TRENDING POSTS</h2>
+            {% if not result %}
+                <p class="empty-state">No trending posts yet. Be the first to create one!</p>
+            {% else %}
+                <div class="post-carousel">
+                    {% for post in result %}
+                    <div class="carousel-item glass-card" data-post-id="{{ post.id }}">
+                        <h3 class="post-title">{{ post.title }}</h3>
+                        <p class="post-subtitle">{{ post.subtitle }}</p>
+                        <div class="post-meta">
+                            <span class="author"><i class="fas fa-user-astronaut"></i> {{ post.user.username }}</span>
+                            <span class="likes"><i class="fas fa-heart"></i> {{ post.likes|length }}</span>
+                        </div>
+                        <a href="{{ url_for('readmore', post_id=post.id) }}" class="read-more-btn">Explore</a>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </section>
+
+        <!-- All Posts - Grid Layout -->
+        <section class="all-posts">
+            <h2 class="section-title neon-text">LATEST CONTENT</h2>
+            {% if not posts %}
+                <p class="empty-state">No posts available yet. Check back soon!</p>
+            {% else %}
+                <div class="posts-grid">
+                    {% for post in posts %}
+                    <article class="post-card glass-card" data-post-id="{{ post.id }}">
+                        <div class="post-header">
+                            <h3 class="post-title">{{ post.title }}</h3>
+                            <p class="post-subtitle">{{ post.subtitle }}</p>
+                        </div>
+                        <div class="post-body">
+                            <div class="post-meta">
+                                <span class="author"><i class="fas fa-user"></i> {{ post.user.username }}</span>
+                                <span class="likes">
+                                    <a href="{{ url_for('like_post', post_id=post.id) }}" class="like-btn">
+                                        <i class="far fa-heart"></i> {{ post.likes|length }}
+                                    </a>
+                                </span>
+                            </div>
+                            <div class="post-actions">
+                                <a href="{{ url_for('readmore', post_id=post.id) }}" class="action-btn">
+                                    <i class="fas fa-book-open"></i> Read
+                                </a>
+                                {% if current_user.is_authenticated and current_user.is_admin %}
+                                <a href="{{ url_for('delete', post_id=post.id) }}" class="action-btn delete-btn">
+                                    <i class="fas fa-trash"></i> Delete
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            {% if current_user.is_authenticated and current_user.is_admin %}
+            <div class="create-post-btn">
+                <a href="{{ url_for('create_post') }}" class="floating-btn">
+                    <i class="fas fa-plus"></i> Create Post
+                </a>
+            </div>
+            {% endif %}
+        </section>
+    </main>
+
+    <!-- Futuristic Footer -->
+    <footer class="holographic-footer">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <h2 class="logo-text"><span class="gradient-text">Orumba</span>-Media</h2>
+                <p class="tagline">Shaping the future of digital content</p>
+                <div class="social-links">
+                    <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+            
+            <div class="footer-section">
+                <h3 class="footer-title">Explore</h3>
+                <ul>
+                    <li><a href="#" class="footer-link">Trending</a></li>
+                    <li><a href="#" class="footer-link">Categories</a></li>
+                    <li><a href="#" class="footer-link">Authors</a></li>
+                    <li><a href="#" class="footer-link">Podcasts</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3 class="footer-title">Company</h3>
+                <ul>
+                    <li><a href="#" class="footer-link">About</a></li>
+                    <li><a href="#" class="footer-link">Careers</a></li>
+                    <li><a href="#" class="footer-link">Press</a></li>
+                    <li><a href="#" class="footer-link">Contact</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3 class="footer-title">Legal</h3>
+                <ul>
+                    <li><a href="#" class="footer-link">Terms</a></li>
+                    <li><a href="#" class="footer-link">Privacy</a></li>
+                    <li><a href="#" class="footer-link">Cookies</a></li>
+                    <li><a href="#" class="footer-link">Licenses</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="copyright">
+            <p>&copy; <span id="year"></span> Orumba-Media. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
+    <script src="{{ url_for('static', filename='js/modern_script.js') }}"></script>
+    
+    <script>
+        // Initialize particles.js
+        particlesJS.load('particles-js', '{{ url_for("static", filename="js/particles-config.json") }}');
+        
+        // Set current year
+        document.getElementById('year').textContent = new Date().getFullYear();
+        
+        // Theme switcher
+        const themeSwitcher = document.getElementById('theme-switcher');
+        themeSwitcher.addEventListener('change', function() {
+            document.documentElement.setAttribute('data-theme', 
+                this.checked ? 'light' : 'dark');
+        });
+    </script>
+</body>
+</html>
