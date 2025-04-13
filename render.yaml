@@ -11,5 +11,5 @@ services:
         value: production
       - key: SECRET_KEY
         generateValue: true
-      - key: SQLALCHEMY_DATABASE_URI
+      - key: DATABASE_URL
         value: postgresql:///orumbamedia

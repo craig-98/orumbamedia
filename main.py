@@ -17,7 +17,7 @@ from flask_gravatar import Gravatar
 
 # Initialize Flask app
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # Required for session management
+app.secret_key = os.environ.get('SECRET_KEY')  # Get from environment variable
 # Initialize Flask-Login
 login_manager = LoginManager(app)
 login_manager.init_app(app)
@@ -25,7 +25,7 @@ bootstrap = Bootstrap5(app)
 login_manager.login_view = 'login'  # Redirect to 'login' view if not logged in
 
 # Configure the database URI
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///example.db').replace('postgres://', 'postgresql://')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///example.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize SQLAlchemy
